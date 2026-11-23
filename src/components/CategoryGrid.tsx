@@ -9,7 +9,7 @@ export function CategoryGrid() {
   const currency = useStore((s) => s.currency);
 
   return (
-    <ul className="grid gap-5 min-[900px]:grid-cols-2">
+    <ul className="grid gap-5 min-[1100px]:grid-cols-2">
       {collections.map((col, i) => {
         const [lead] = col.books;
         const prices = col.books.map((b) => b.price);
@@ -18,11 +18,14 @@ export function CategoryGrid() {
           <li key={col.id}>
             <Link
               href={`/shop?shelf=${col.id}`}
-              className="group relative flex h-full min-h-[340px] flex-col overflow-hidden rounded-2xl p-7 text-white min-[700px]:p-9"
+              className="group relative flex h-full flex-col overflow-hidden rounded-2xl p-6 text-white min-[640px]:min-h-[340px] min-[700px]:p-9"
               style={{ background: `linear-gradient(140deg, ${lead.color} 0%, color-mix(in srgb, ${lead.color} 70%, ${lead.accent}) 100%)` }}
             >
-              {/* covers fanned out on the right */}
-              <div aria-hidden="true" className="pointer-events-none absolute -right-6 bottom-[-12%] flex w-[58%] items-end min-[700px]:right-4">
+              {/* covers fanned out: on top on phones, on the right from 640 px */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none relative mx-auto mb-7 mt-2 flex w-[80%] max-w-[340px] items-end justify-center min-[640px]:absolute min-[640px]:-right-6 min-[640px]:bottom-[-12%] min-[640px]:m-0 min-[640px]:w-[52%] min-[640px]:max-w-none min-[640px]:justify-start min-[700px]:right-4"
+              >
                 {fan.map((b, j) => (
                   <span
                     key={b.id}
@@ -41,7 +44,7 @@ export function CategoryGrid() {
                 ))}
               </div>
 
-              <div className="relative z-10 max-w-[55%] max-[500px]:max-w-[70%]">
+              <div className="relative z-10 min-[640px]:max-w-[50%]">
                 <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-white/70">
                   Shelf {String(i + 1).padStart(2, "0")}
                 </p>
@@ -49,7 +52,7 @@ export function CategoryGrid() {
                 <p className="mt-4 text-[14px] leading-relaxed text-white/80">{col.description}</p>
               </div>
 
-              <div className="relative z-10 mt-auto flex flex-wrap items-center gap-2 pt-8 text-[13px]">
+              <div className="relative z-10 mt-auto flex flex-wrap items-center gap-2 pt-6 text-[13px] min-[640px]:max-w-[50%] min-[640px]:pt-8">
                 <span className="rounded-full bg-white/15 px-3 py-1.5 backdrop-blur">{col.books.length} books</span>
                 <span className="rounded-full bg-white/15 px-3 py-1.5 backdrop-blur">
                   {formatPrice(Math.min(...prices), currency)} to {formatPrice(Math.max(...prices), currency)}

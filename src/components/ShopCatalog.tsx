@@ -86,7 +86,7 @@ function BookCard({ book }: { book: Book }) {
         <p className="text-[11px] uppercase tracking-[0.12em] text-neutral-500">{getCollection(book.collection).name}</p>
         <h3 className="mt-1 text-[15px] font-semibold leading-snug">{book.title}</h3>
         <p className="text-[13px] text-neutral-500">{book.author}</p>
-        <div className="mt-auto flex items-center justify-between gap-2 pt-3">
+        <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-3">
           <p className="text-[14px]">
             <span className="text-neutral-500">from </span>
             <span className="font-semibold">{formatPrice(book.price, currency)}</span>

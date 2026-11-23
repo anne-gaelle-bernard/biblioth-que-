@@ -59,10 +59,29 @@ function CameraRig() {
   return null;
 }
 
+/**
+ * Keeps about 50° of horizontal view on any screen: 55° vertical on wide screens,
+ * wider on tablets and phones held upright, so the hall's signs and books stay in frame.
+ */
+function ResponsiveFov() {
+  useFrame(({ camera, size }) => {
+    if (!(camera instanceof THREE.PerspectiveCamera)) return;
+    const aspect = size.width / size.height;
+    const fit = THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(25)) / aspect));
+    const fov = THREE.MathUtils.clamp(fit, 55, 80);
+    if (Math.abs(camera.fov - fov) > 0.01) {
+      camera.fov = fov;
+      camera.updateProjectionMatrix();
+    }
+  });
+  return null;
+}
+
 function Scene({ onShop }: { onShop: () => void }) {
   return (
     <>
       <color attach="background" args={[WALL]} />
+      <ResponsiveFov />
       <fog attach="fog" args={[WALL, 12, 38]} />
       <ambientLight intensity={1.8} />
       <hemisphereLight args={["#ffffff", "#d9d9d6", 0.8]} />

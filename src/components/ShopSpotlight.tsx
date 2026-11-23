@@ -67,13 +67,13 @@ export function ShopSpotlight() {
           </div>
         </div>
 
-        <div className="flex justify-center min-[800px]:justify-end">
+        <div className="flex justify-center max-[799px]:order-first min-[800px]:justify-end">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             key={book.id}
             src={book.cover}
             alt={`Cover of ${book.title}`}
-            className="spotlight-cover aspect-[2/3] w-[min(62vw,280px)] rounded-[3px_8px_8px_3px] object-cover shadow-[0_40px_80px_-20px_rgba(0,0,0,0.8)]"
+            className="spotlight-cover aspect-[2/3] w-[min(42vw,190px)] rounded-[3px_8px_8px_3px] min-[800px]:w-[min(26vw,280px)] object-cover shadow-[0_40px_80px_-20px_rgba(0,0,0,0.8)]"
           />
         </div>
       </div>

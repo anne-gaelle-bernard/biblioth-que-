@@ -26,7 +26,8 @@ function Logo() {
   );
 }
 
-function SearchPill() {
+/** Book search. In the header from 1024 px; inside the menu panel (full width) below that. */
+function SearchPill({ inMenu = false, onChosen }: { inMenu?: boolean; onChosen?: () => void }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
@@ -44,6 +45,7 @@ function SearchPill() {
   const choose = (id: string) => {
     setOpen(false);
     setQuery("");
+    onChosen?.();
     if (pathname === "/") {
       const item = bookItem(id);
       if (item) nav.jump(cameraSFor(item.s));
@@ -54,8 +56,8 @@ function SearchPill() {
   };
 
   return (
-    <div ref={box} className="relative max-[700px]:hidden">
-      <label className="flex h-8 items-center gap-2 rounded-full bg-neutral-100 px-3 focus-within:ring-1 focus-within:ring-neutral-400">
+    <div ref={box} className={inMenu ? "relative w-full" : "relative max-[1023px]:hidden"}>
+      <label className={`flex items-center gap-2 rounded-full bg-neutral-100 px-3 focus-within:ring-1 focus-within:ring-neutral-400 ${inMenu ? "h-11" : "h-8"}`}>
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true">
           <circle cx="11" cy="11" r="7" />
           <path d="m20 20-3.5-3.5" />
@@ -70,11 +72,15 @@ function SearchPill() {
           onFocus={() => setOpen(true)}
           onKeyDown={(e) => e.key === "Enter" && results[0] && choose(results[0].id)}
           placeholder="Search by title or author"
-          className="w-32 bg-transparent text-[13px] outline-none placeholder:text-neutral-500 min-[1000px]:w-44"
+          className={`bg-transparent outline-none placeholder:text-neutral-500 ${inMenu ? "w-full text-[16px]" : "w-44 text-[13px]"}`}
         />
       </label>
       {open && query && (
-        <ul className="absolute right-0 top-10 w-80 overflow-hidden rounded-xl bg-white py-1 shadow-xl ring-1 ring-black/5">
+        <ul
+          className={`overflow-hidden rounded-xl bg-white py-1 ring-1 ring-black/5 ${
+            inMenu ? "mt-2 w-full" : "absolute right-0 top-10 w-80 shadow-xl"
+          }`}
+        >
           {results.length === 0 && <li className="px-4 py-3 text-sm text-neutral-500">No book found for &quot;{query}&quot;.</li>}
           {results.map((b) => (
             <li key={b.id}>
@@ -106,6 +112,16 @@ export function Navbar() {
   const setCartOpen = useStore((s) => s.setCartOpen);
   const count = hydrated ? cartCount(items) : 0;
 
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  // Esc closes the menu
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setMenuOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [menuOpen]);
+
   const goHome = (e: React.MouseEvent) => {
     // On the home page, "Home" walks back to the entrance (and closes an open book).
     if (pathname !== "/") return;
@@ -122,9 +138,10 @@ export function Navbar() {
           <Logo />
           <span className="font-display text-[17px] uppercase tracking-[0.04em] max-[500px]:hidden">Lamplight</span>
         </Link>
-        <nav aria-label="Main" className="flex items-center max-[400px]:hidden">
-          {LINKS.map((l, i) => (
-            <span key={l.href} className={`flex items-center px-1 ${i > 2 ? "max-[700px]:hidden" : ""}`}>
+        {/* full links from 1024 px (desktop) */}
+        <nav aria-label="Main" className="flex items-center max-[1023px]:hidden">
+          {LINKS.map((l) => (
+            <span key={l.href} className="flex items-center px-1">
               <Link
                 href={l.href}
                 onClick={l.href === "/" ? goHome : undefined}
@@ -141,20 +158,63 @@ export function Navbar() {
           <button
             type="button"
             onClick={toggleCurrency}
-            className="h-8 rounded-full border border-neutral-300 px-3 transition hover:border-neutral-950"
+            className="h-8 rounded-full border border-neutral-300 px-3 transition hover:border-neutral-950 max-[380px]:px-2"
             aria-label={`Currency: ${currency}. Switch currency`}
           >
-            {hydrated && currency === "GBP" ? "£ GBP" : "€ EUR"}
+            {hydrated && currency === "GBP" ? "£" : "€"}
+            <span className="max-[380px]:hidden">{hydrated && currency === "GBP" ? " GBP" : " EUR"}</span>
           </button>
           <button
             type="button"
             onClick={() => setCartOpen(true)}
-            className="h-8 rounded-full bg-neutral-950 px-4 font-medium text-white transition hover:bg-neutral-700"
+            className="h-8 rounded-full bg-neutral-950 px-4 font-medium text-white transition hover:bg-neutral-700 max-[380px]:px-3"
           >
             Bag ({count})
           </button>
+          {/* menu button on phones and tablets */}
+          <button
+            type="button"
+            onClick={() => setMenuOpen((o) => !o)}
+            aria-expanded={menuOpen}
+            aria-controls="mobile-menu"
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            className="grid h-8 w-8 place-items-center rounded-full border border-neutral-300 transition hover:border-neutral-950 min-[1024px]:hidden"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
+              {menuOpen ? <path d="M6 6l12 12M18 6 6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
+            </svg>
+          </button>
         </div>
       </div>
+
+      {/* menu panel (phones and tablets) */}
+      {menuOpen && (
+        <>
+          <div className="fixed inset-0 top-11 bg-black/20 min-[1024px]:hidden" onClick={() => setMenuOpen(false)} aria-hidden="true" />
+          <div id="mobile-menu" className="absolute inset-x-0 top-11 max-h-[calc(100dvh-44px)] overflow-y-auto border-b border-neutral-200 bg-white px-4 pb-6 pt-4 shadow-xl min-[1024px]:hidden">
+            <SearchPill inMenu onChosen={() => setMenuOpen(false)} />
+            <nav aria-label="Main" className="mt-4 grid gap-1 min-[600px]:grid-cols-2">
+              {LINKS.map((l) => (
+                <Link
+                  key={l.href}
+                  href={l.href}
+                  onClick={(e) => {
+                    setMenuOpen(false);
+                    if (l.href === "/") goHome(e);
+                  }}
+                  aria-current={pathname === l.href ? "page" : undefined}
+                  className={`flex h-12 items-center justify-between rounded-xl px-4 font-display text-[22px] uppercase transition ${
+                    pathname === l.href ? "bg-neutral-950 text-white" : "hover:bg-neutral-100"
+                  }`}
+                >
+                  {l.label}
+                  <span aria-hidden="true" className="font-sans text-[15px]">→</span>
+                </Link>
+              ))}
+            </nav>
+          </div>
+        </>
+      )}
     </header>
   );
 }
