@@ -30,7 +30,76 @@ html.no-scroll body {
   }
 }
 
+/* Shop: scrolling ribbon */
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+.marquee-track {
+  animation: marquee 40s linear infinite;
+}
+
+/* Shop: spotlight book */
+@keyframes spotlight-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+@keyframes spotlight-cover {
+  from {
+    opacity: 0;
+    transform: translateY(30px) rotate(-6deg) scale(0.94);
+  }
+  to {
+    transform: rotate(3deg);
+  }
+}
+@keyframes grow {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+.spotlight-in {
+  animation: spotlight-in 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.spotlight-cover {
+  animation: spotlight-cover 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.spotlight-progress {
+  animation-name: grow;
+  animation-timing-function: linear;
+  animation-fill-mode: both;
+}
+
+/* Shop: book cards fade up as they scroll into view (browsers that support it) */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.96);
+  }
+}
+@supports (animation-timeline: view()) {
+  .reveal {
+    animation: fade-up linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 55%;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .marquee-track,
+  .reveal,
+  .spotlight-progress {
+    animation: none !important;
+  }
+  .spotlight-progress {
+    width: 100%;
+  }
   *,
   *::before,
   *::after {

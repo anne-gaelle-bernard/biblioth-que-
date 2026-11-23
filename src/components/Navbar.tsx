@@ -12,6 +12,7 @@ import { useHydrated } from "./Providers";
 const LINKS = [
   { href: "/", label: "Home" },
   { href: "/shop", label: "Shop" },
+  { href: "/categories", label: "Categories" },
   { href: "/info", label: "Info" },
   { href: "/archive", label: "Archive" },
   { href: "/help", label: "Help" },

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { books, collections, formatPrice, getCollection, type Book } from "@/data/catalog";
 import { useStore } from "@/store/useStore";
+import { ShopSpotlight } from "./ShopSpotlight";
 
 const SORTS = [
   { id: "featured", label: "Featured" },
@@ -34,23 +35,50 @@ function BookCard({ book }: { book: Book }) {
     window.setTimeout(() => setAdded(false), 1500);
   };
 
+  /** Tilts the cover towards the mouse and moves a light reflection with it. */
+  const tilt = (e: React.PointerEvent<HTMLElement>) => {
+    if (e.pointerType !== "mouse") return;
+    const r = e.currentTarget.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width - 0.5;
+    const y = (e.clientY - r.top) / r.height - 0.5;
+    e.currentTarget.style.setProperty("--rx", `${(-y * 14).toFixed(2)}deg`);
+    e.currentTarget.style.setProperty("--ry", `${(x * 18).toFixed(2)}deg`);
+    e.currentTarget.style.setProperty("--gx", `${(x + 0.5) * 100}%`);
+    e.currentTarget.style.setProperty("--gy", `${(y + 0.5) * 100}%`);
+  };
+  const untilt = (e: React.PointerEvent<HTMLElement>) => {
+    for (const v of ["--rx", "--ry"]) e.currentTarget.style.setProperty(v, "0deg");
+  };
+  const classic = book.year < 1960;
+
   return (
-    <li className="group flex flex-col">
+    <li className="reveal group flex flex-col">
       <Link
         href={`/?b=${book.id}`}
-        className="relative block overflow-hidden rounded-xl p-[14%] transition-colors"
-        style={{ backgroundColor: `color-mix(in srgb, ${book.color} 12%, #ffffff)` }}
+        onPointerMove={tilt}
+        onPointerLeave={untilt}
+        className="relative block overflow-hidden rounded-2xl p-[14%] [perspective:900px]"
+        style={{ background: `radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, ${book.accent} 22%, #ffffff), color-mix(in srgb, ${book.color} 18%, #ffffff))` }}
         aria-label={`${book.title} by ${book.author}, view in the library`}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={book.cover}
-          alt=""
-          loading="lazy"
-          className="aspect-[2/3] w-full rounded-[2px_4px_4px_2px] object-cover shadow-[0_18px_30px_-12px_rgba(0,0,0,0.45)] transition duration-300 group-hover:-translate-y-1.5 group-hover:rotate-[-1.5deg]"
-        />
-        <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium text-neutral-700 backdrop-blur">
-          {book.year}
+        <span
+          className="relative block rounded-[2px_5px_5px_2px] shadow-[0_18px_30px_-12px_rgba(0,0,0,0.45)] transition-[transform,box-shadow] duration-300 ease-out [transform:rotateX(var(--rx,0deg))_rotateY(var(--ry,0deg))] group-hover:shadow-[0_34px_50px_-16px_rgba(0,0,0,0.55)]"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={book.cover} alt="" loading="lazy" className="aspect-[2/3] w-full rounded-[inherit] object-cover" />
+          {/* light reflection following the mouse */}
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 rounded-[inherit] opacity-0 mix-blend-soft-light transition-opacity duration-300 group-hover:opacity-100"
+            style={{ background: "radial-gradient(circle at var(--gx,50%) var(--gy,30%), rgba(255,255,255,0.9), transparent 55%)" }}
+          />
+        </span>
+        <span className="absolute left-3 top-3 flex gap-1.5">
+          <span className="rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium text-neutral-700 backdrop-blur">{book.year}</span>
+          {classic && <span className="rounded-full bg-amber-300 px-2.5 py-1 text-[11px] font-semibold text-neutral-950">Classic</span>}
+        </span>
+        <span className="absolute bottom-3 right-3 translate-y-2 rounded-full bg-neutral-950 px-3 py-1.5 text-[11px] font-medium text-white opacity-0 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+          See in 3D →
         </span>
       </Link>
 
@@ -80,9 +108,15 @@ function BookCard({ book }: { book: Book }) {
 }
 
 /** Shop page: filter by shelf, search, sort and add books to the bag. */
-export function ShopCatalog() {
+export function ShopCatalog({ initialShelf = "all" }: { initialShelf?: string }) {
   const currency = useStore((s) => s.currency);
-  const [shelf, setShelf] = useState<string>("all");
+  const [shelf, setShelfState] = useState<string>(initialShelf);
+
+  /** Keeps ?shelf= in the URL so a filtered shop can be shared or reloaded. */
+  const setShelf = (id: string) => {
+    setShelfState(id);
+    window.history.replaceState(null, "", id === "all" ? "/shop" : `/shop?shelf=${id}`);
+  };
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortId>("featured");
 
@@ -108,20 +142,29 @@ export function ShopCatalog() {
 
   return (
     <>
-      {/* Facts strip */}
-      <dl className="mb-10 grid grid-cols-2 gap-px overflow-hidden rounded-xl bg-neutral-300 min-[700px]:grid-cols-4">
-        {[
-          ["Books", String(books.length)],
-          ["Shelves", String(collections.length)],
-          ["Prices", `${formatPrice(Math.min(...prices), currency)} to ${formatPrice(Math.max(...prices), currency)}`],
-          ["Free shipping", `over ${formatPrice(40, currency)}`],
-        ].map(([k, v]) => (
-          <div key={k} className="bg-[#f2f2f2] px-5 py-4">
-            <dt className="text-[12px] text-neutral-500">{k}</dt>
-            <dd className="mt-1 text-[17px] font-semibold">{v}</dd>
-          </div>
-        ))}
-      </dl>
+      <ShopSpotlight />
+
+      {/* Scrolling ribbon: genres and shop perks (content doubled for a seamless loop) */}
+      <div className="-mx-5 mb-10 overflow-hidden border-y border-neutral-950 bg-amber-300 py-3 min-[700px]:-mx-10" aria-label="Shop facts">
+        <div className="marquee-track flex w-max">
+          {[0, 1].map((copy) => (
+            <ul key={copy} className="flex shrink-0 items-center" aria-hidden={copy === 1 || undefined}>
+              {[
+                `${books.length} real books`,
+                ...collections.map((c) => c.name),
+                `Free shipping over ${formatPrice(40, currency)}`,
+                `From ${formatPrice(Math.min(...prices), currency)}`,
+                "30-day returns",
+              ].map((t) => (
+                <li key={t} className="flex items-center whitespace-nowrap font-display text-[22px] uppercase tracking-wide">
+                  <span className="px-6">{t}</span>
+                  <span aria-hidden="true">✦</span>
+                </li>
+              ))}
+            </ul>
+          ))}
+        </div>
+      </div>
 
       {/* Toolbar */}
       <div className="sticky top-11 z-20 -mx-5 mb-8 border-b border-neutral-300 bg-[#f2f2f2]/90 px-5 py-3 backdrop-blur min-[700px]:-mx-10 min-[700px]:px-10">

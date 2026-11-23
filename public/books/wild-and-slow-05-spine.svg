@@ -4,10 +4,10 @@
   <rect x="0" y="40" width="120" height="6" fill="#b5562f"/>
   <rect x="0" y="854" width="120" height="6" fill="#b5562f"/>
   <g transform="translate(76 80) rotate(90)">
-    <text x="0" y="0" font-family="Impact, 'Arial Narrow', sans-serif" font-size="44" fill="#2b1a10">MOSS AND MEMORY</text>
+    <text x="0" y="0" font-family="Impact, 'Arial Narrow', sans-serif" font-size="44" fill="#2b1a10">H IS FOR HAWK</text>
   </g>
   <g transform="translate(34 80) rotate(90)">
-    <text x="0" y="0" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-size="22" fill="#2b1a10" opacity="0.8">Paul Okafor</text>
+    <text x="0" y="0" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-size="22" fill="#2b1a10" opacity="0.8">Helen Macdonald</text>
   </g>
   <text x="60" y="830" text-anchor="middle" font-family="Impact, 'Arial Narrow', sans-serif" font-size="30" fill="#2b1a10">M</text>
 </svg>
