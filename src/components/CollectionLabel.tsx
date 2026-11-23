@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { collections } from "@/data/catalog";
 import { layout } from "@/lib/corridor";
 import { nav } from "@/lib/nav";
@@ -22,12 +22,21 @@ function step(dir: 1 | -1) {
 
 /**
  * Bottom bar: current room, room shortcuts, previous and next buttons, and a link
- * to the list view.
+ * to the list view. The room name changes as the visitor walks.
  */
 export function CollectionLabel({ hidden }: { hidden: boolean }) {
   const current = useStore((s) => s.currentCollection);
   const index = collections.findIndex((c) => c.id === current);
+  // outside every room: either the entrance hall (before room 1) or the end wall.
+  // This re-renders whenever the room changes, so reading the camera position here is up to date.
+  const atEntrance = index < 0 && nav.current < layout.sections[0].start;
   const [guideOpen, setGuideOpen] = useState(false);
+  const roomButtons = useRef<(HTMLButtonElement | null)[]>([]);
+
+  // keep the active room visible in the bottom bar on narrow screens
+  useEffect(() => {
+    roomButtons.current[index]?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+  }, [index]);
 
   // first visit: show the "How to visit" guide once the gallery has appeared
   useEffect(() => {
@@ -59,8 +68,14 @@ export function CollectionLabel({ hidden }: { hidden: boolean }) {
               <>
                 Room {index + 1}: <strong className="font-semibold text-neutral-950">{collections[index].name}</strong>
               </>
+            ) : atEntrance ? (
+              <>
+                <strong className="font-semibold text-neutral-950">Welcome</strong> · scroll or use the arrows to walk in
+              </>
             ) : (
-              "Use the arrows below to walk. Click a book to see it."
+              <>
+                <strong className="font-semibold text-neutral-950">The end</strong> · you&apos;ve seen every room
+              </>
             )}
           </p>
   
@@ -72,6 +87,9 @@ export function CollectionLabel({ hidden }: { hidden: boolean }) {
               {collections.map((c, i) => (
                 <button
                   key={c.id}
+                  ref={(el) => {
+                    roomButtons.current[i] = el;
+                  }}
                   type="button"
                   onClick={() => (nav.target = roomStarts[i])}
                   aria-current={i === index ? "true" : undefined}

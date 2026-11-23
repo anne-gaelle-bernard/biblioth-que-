@@ -31,7 +31,9 @@ export interface Section {
 }
 
 const STEP = 1.45; // distance between consecutive exhibits (they alternate sides)
-const START = 4;
+/** Where the welcome sign hangs; the first room starts further in, after the entrance hall. */
+export const WELCOME_S = 4.5;
+const START = 9;
 const TAIL = 8;
 
 function buildLayout() {

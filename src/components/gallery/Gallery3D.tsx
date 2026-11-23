@@ -7,7 +7,10 @@ import { collections } from "@/data/catalog";
 import { buildCorridorGeometry, CORRIDOR, frameAt, layout, sectionAt, type Frame } from "@/lib/corridor";
 import { nav } from "@/lib/nav";
 import { useStore } from "@/store/useStore";
+import { useRouter } from "next/navigation";
 import { BookMesh } from "./BookMesh";
+import { EndWall } from "./EndWall";
+import { WelcomeSign } from "./WelcomeSign";
 import { TitleCard } from "./TitleCard";
 
 const WALL = "#f2f2f2";
@@ -56,7 +59,7 @@ function CameraRig() {
   return null;
 }
 
-function Scene() {
+function Scene({ onShop }: { onShop: () => void }) {
   return (
     <>
       <color attach="background" args={[WALL]} />
@@ -73,6 +76,8 @@ function Scene() {
           <TitleCard key={item.collectionId} name={item.name} index={item.index} count={collections.length} s={item.s} />
         ),
       )}
+      <WelcomeSign />
+      <EndWall onShop={onShop} />
     </>
   );
 }
@@ -132,6 +137,7 @@ function useCorridorInput(el: React.RefObject<HTMLDivElement | null>) {
 
 export default function Gallery3D() {
   const wrapper = useRef<HTMLDivElement>(null);
+  const router = useRouter();
   useCorridorInput(wrapper);
   return (
     <div ref={wrapper} className="absolute inset-0 touch-none" aria-label="3D museum of books. Scroll or swipe to walk down the hall, click an exhibit to open it.">
@@ -141,7 +147,7 @@ export default function Gallery3D() {
         camera={{ fov: 55, near: 0.05, far: 40, position: [0, CORRIDOR.eyeHeight, 0] }}
         onPointerMissed={() => (document.body.style.cursor = "")}
       >
-        <Scene />
+        <Scene onShop={() => router.push("/shop")} />
       </Canvas>
     </div>
   );

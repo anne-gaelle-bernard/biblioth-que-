@@ -9,7 +9,7 @@ const STEPS = [
   },
   {
     title: "Change room",
-    text: "Each room is a collection. Click a room name in the bottom bar to go straight to it.",
+    text: "Each room is a book category. As you walk, the room name changes in the bottom bar. Click a room name in the bottom bar to go straight to it.",
   },
   {
     title: "Look at a book",
